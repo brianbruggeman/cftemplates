@@ -1,0 +1,73 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Base EC2 Template v0.1",
+  "Parameters": {
+    "MyInstanceAZ": {
+      "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+      "Description": "The Desired AZ For Your EC2 Instance"
+    },
+    "MyInstanceVPC": {
+      "Type": "AWS::EC2::VPC::Id",
+      "Description": "The Desired VPC For Your EC2 Instance"
+    },
+    "MyInstanceSubnet": {
+      "Type": "AWS::EC2::Subnet::Id",
+      "Description": "The Desired Subnet For Your EC2 Instance"
+    },
+    "MyInstanceKeyPair": {
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Description": "The Desired KeyPair For Your EC2 Instance"
+    },
+    "MyInstanceSecurityGroup": {
+      "Type": "List<AWS::EC2::SecurityGroup::Id>",
+      "Description": "The Desired SecurityGroup For Your EC2 Instance"
+    },
+    "MyInstanceIamProfile": {
+      "Type": "String",
+      "Description": "The Desired IAM Profile For Your EC2 Instance"
+    },
+    "MyInstanceType": {
+      "Type": "String",
+      "Default": "t2.micro",
+      "AllowedValues": ["t2.nano", "t2.micro", "t2.small", "t2.medium",
+        "t2.large", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge",
+        "m4.10xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge",
+        "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge",
+        "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge",
+        "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge",
+        "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge",
+        "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge"],
+      "Description": "The Desired Instance Type For Your EC2 Instance"
+    },
+    "MyInstanceAMI": {
+      "Type": "AWS::EC2::Image::Id",
+      "Description": "The Desired AMI For Your EC2 Instance"
+    }
+  },
+  "Resources" : {
+    "MyEc2Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceName": {"Ref": "MyInstanceAMI"}
+      }
+    }
+  },
+  "Outputs":{
+    "InstanceCreated": {
+      "Description": "The ID of the Created EC2 Instance",
+      "Value": {"Ref": "MyEc2Instance"}
+    },
+    "InstanceDnsName": {
+      "Description": "The Public DNS of the Created EC2 Instance",
+      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PublicDnsName"]}
+    },
+    "InstancePublicIp": {
+      "Description": "The Public IP Address of the Created EC2 Instance",
+      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PublicIp"]}
+    },
+    "InstancePrivateIp": {
+      "Description": "The Private IP Address of the Created EC2 Instance",
+      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PrivateIp"]}
+    }
+  }
+}

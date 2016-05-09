@@ -1,0 +1,271 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "Base VPC Template v0.1",
+  "Parameters": {
+    "myPrivateNet1": {
+      "Type": "String",
+      "Description": "The Desired Private Net1 CIDR Block Range"
+    },
+    "myPrivateNet1AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myPrivateNet2": {
+      "Type": "String",
+      "Description": "The Desired Private Net2 CIDR Block Range"
+    },
+    "myPrivateNet2AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myPrivateNet3": {
+      "Type": "String",
+      "Description": "The Desired Private Net3 CIDR Block Range"
+    },
+    "myPrivateNet3AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myPublicNet1": {
+      "Type": "String",
+      "Description": "The Desired Public Net1 CIDR Block Range"
+    },
+    "myPublicNet1AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myPublicNet2": {
+      "Type": "String",
+      "Description": "The Desired Public Net2 CIDR Block Range"
+    },
+    "myPublicNet2AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myPublicNet3": {
+      "Type": "String",
+      "Description": "The Desired Public Net3 CIDR Block Range"
+    },
+    "myPublicNet3AZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
+      "Description": "The Desired AvailabilityZone for this Subnet"
+    },
+    "myCidrBlock": {
+      "Type": "String",
+      "Description": "The Desired VPC CIDR Block Range"
+    }
+  },
+  "Resources" : {
+    "myVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": {"Ref": "myCidrBlock"},
+        "EnableDnsHostnames": "True"
+      }
+    },
+    "myIgw": {
+      "Type": "AWS::EC2::InternetGateway"
+    },
+    "myVpcIgw": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {"Ref": "myIgw"},
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPubRt": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPubDefRt": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "myIgw"},
+        "RouteTableId": {"Ref": "myPubRt"}
+      }
+    },
+    "myPubNet1DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPubRt"},
+        "SubnetId": {"Ref": "myPubNet1"}
+      }
+    },
+    "myPubNet2DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPubRt"},
+        "SubnetId": {"Ref": "myPubNet2"}
+      }
+    },
+    "myPubNet3DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPubRt"},
+        "SubnetId": {"Ref": "myPubNet3"}
+      }
+    },
+    "myPrivNet1DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPrivRt1"},
+        "SubnetId": {"Ref": "myPrivNet1"}
+      }
+    },
+    "myPrivNet2DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPrivRt2"},
+        "SubnetId": {"Ref": "myPrivNet2"}
+      }
+    },
+    "myPrivNet3DefRt": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "RouteTableId": {"Ref": "myPrivRt3"},
+        "SubnetId": {"Ref": "myPrivNet3"}
+      }
+    },
+    "myPrivRt1": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPriv1DefRt": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {"Ref": "myNatGw1"},
+        "RouteTableId": {"Ref": "myPrivRt1"}
+      }
+    },
+    "myPrivRt2": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPriv2DefRt": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {"Ref": "myNatGw2"},
+        "RouteTableId": {"Ref": "myPrivRt2"}
+      }
+    },
+    "myPrivRt3": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPriv3DefRt": {
+      "Type": "AWS::EC2::Route",
+      "Properties": {
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "NatGatewayId": {"Ref": "myNatGw3"},
+        "RouteTableId": {"Ref": "myPrivRt3"}
+      }
+    },
+    "myEip1": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "DependsOn": "myVpcIgw"
+    },
+    "myNatGw1": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {"Fn::GetAtt": ["myEip1", "AllocationId"]},
+        "SubnetId": {"Ref": "myPubNet1"}
+      }
+    },
+    "myEip2": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "DependsOn": "myVpcIgw"
+    },
+    "myNatGw2": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {"Fn::GetAtt": ["myEip2", "AllocationId"]},
+        "SubnetId": {"Ref": "myPubNet2"}
+      }
+    },
+    "myEip3": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "DependsOn": "myVpcIgw"
+    },
+    "myNatGw3": {
+      "Type": "AWS::EC2::NatGateway",
+      "Properties": {
+        "AllocationId": {"Fn::GetAtt": ["myEip3", "AllocationId"]},
+        "SubnetId": {"Ref": "myPubNet3"}
+      }
+    },
+    "myPrivNet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPrivateNet1"},
+        "AvailabilityZone": {"Ref": "myPrivateNet1AZ"},
+        "MapPublicIpOnLaunch": "False",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPrivNet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPrivateNet2"},
+        "AvailabilityZone": {"Ref": "myPrivateNet2AZ"},
+        "MapPublicIpOnLaunch": "False",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPrivNet3": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPrivateNet3"},
+        "AvailabilityZone": {"Ref": "myPrivateNet3AZ"},
+        "MapPublicIpOnLaunch": "False",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPubNet1": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPublicNet1"},
+        "AvailabilityZone": {"Ref": "myPublicNet1AZ"},
+        "MapPublicIpOnLaunch": "True",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPubNet2": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPublicNet2"},
+        "AvailabilityZone": {"Ref": "myPublicNet2AZ"},
+        "MapPublicIpOnLaunch": "True",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    },
+    "myPubNet3": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "CidrBlock": {"Ref": "myPublicNet3"},
+        "AvailabilityZone": {"Ref": "myPublicNet3AZ"},
+        "MapPublicIpOnLaunch": "True",
+        "VpcId": {"Ref": "myVPC"}
+      }
+    }
+  }
+}
