@@ -72,7 +72,7 @@
   },
   "Mappings": {
     "RegionOSAMIMap":{
-      "us-east-1": {"Debian7": "ami-ba9614d2", "Debian8": "ami-8e9ca3e4", "AmazonLinux": "ami-08111162", "CentOS6": "ami-1c221e76", "CentOS7": "ami-6d1c2007", "Ubuntu1204": "ami-88dfdee2", "Ubuntu1404": "ami-7c927e11"},
+      "us-east-1": {"Debian7": "ami-ba9614d2", "Debian8": "ami-8e9ca3e4", "AmazonLinux": "ami-f5f41398", "CentOS6": "ami-1c221e76", "CentOS7": "ami-6d1c2007", "Ubuntu1204": "ami-88dfdee2", "Ubuntu1404": "ami-7c927e11"},
       "us-west-1": {"Debian7": "ami-13a1b556", "Debian8": "ami-c890e0a8", "AmazonLinux": "ami-1b0f7d7b", "CentOS6": "ami-ac5f2fcc", "CentOS7": "ami-af4333cf", "Ubuntu1204": "ami-4f285a2f", "Ubuntu1404": "ami-4983fa29"},
       "us-west-2": {"Debian7": "ami-89763fb9", "Debian8": "ami-59799439", "AmazonLinux": "ami-c229c0a2", "CentOS6": "ami-05cf2265", "CentOS7": "ami-d2c924b2", "Ubuntu1204": "ami-1a977e7a", "Ubuntu1404": "ami-c0c439a0"},
       "eu-west-1": {"Debian7": "ami-2602aa51", "Debian8": "ami-3a13ac49", "AmazonLinux": "ami-60338913", "CentOS6": "ami-edb9069e", "CentOS7": "ami-7abd0209", "Ubuntu1204": "ami-65932916", "Ubuntu1404": "ami-a6a62cd5"},
@@ -81,7 +81,8 @@
     }
   },
   "Conditions": {
-    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "Specify AMI"]}
+    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "Specify AMI"]},
+    "MappedAMI": {"Fn::Not": [{"Fn::Equals": [{"Ref": "myInstanceOS"}, "Specify AMI"]}]}
   },
   "Resources" : {
     "myInstanceRole": {
@@ -108,36 +109,34 @@
         "Roles": [{"Ref": "myInstanceRole"}]
       }
     },
-    "myEc2Instance": {
+    "myEc2InstanceManual": {
       "Type": "AWS::EC2::Instance",
+      "Condition": "ManualAMI",
       "Properties": {
         "AvailabilityZone": {"Ref": "myInstanceAZ"},
         "IamInstanceProfile": {"Ref": "myInstanceProfile"},
-        "ImageId": {"Fn::If": [
-          "ManualAMI",
-          {"Ref": "myInstanceAMI"},
-          { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myInstanceOS"}]}
-          ]
-        }
+        "ImageId": {"Ref": "myInstanceAMI"},
+        "InstanceType": {"Ref": "myInstanceType"}
+      }
+    },
+    "myEc2InstanceMapped": {
+      "Type": "AWS::EC2::Instance",
+      "Condition": "MappedAMI",
+      "Properties": {
+        "AvailabilityZone": {"Ref": "myInstanceAZ"},
+        "IamInstanceProfile": {"Ref": "myInstanceProfile"},
+        "ImageId": {"Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myInstanceOS"}]},
+        "InstanceType": {"Ref": "myInstanceType"}
       }
     }
   },
   "Outputs":{
     "InstanceCreated": {
       "Description": "The ID of the Created EC2 Instance",
-      "Value": {"Ref": "myEc2Instance"}
-    },
-    "InstanceDnsName": {
-      "Description": "The Public DNS of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicDnsName"]}
-    },
-    "InstancePublicIp": {
-      "Description": "The Public IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicIp"]}
-    },
-    "InstancePrivateIp": {
-      "Description": "The Private IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PrivateIp"]}
+      "Value": {"Fn::If": ["ManualAMI",
+        {"Ref": "myEc2InstanceManual"},
+        {"Ref": "myEc2InstanceMapped"}]
+      }
     }
   }
 }
