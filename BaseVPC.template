@@ -60,7 +60,10 @@
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": {"Ref": "myCidrBlock"},
-        "EnableDnsHostnames": "True"
+        "EnableDnsHostnames": "True",
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "VPC"]]}}
+	]
       }
     },
     "myIgw": {
@@ -70,13 +73,19 @@
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
         "InternetGatewayId": {"Ref": "myIgw"},
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "IGW"]]}}
+	]
       }
     },
     "myPubRt": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PubRouteTable"]]}}
+	]
       }
     },
     "myPubDefRt": {
@@ -132,7 +141,10 @@
     "myPrivRt1": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "Priv1RouteTable"]]}}
+	]
       }
     },
     "myPriv1DefRt": {
@@ -146,7 +158,10 @@
     "myPrivRt2": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "Priv2RouteTable"]]}}
+	]
       }
     },
     "myPriv2DefRt": {
@@ -160,7 +175,10 @@
     "myPrivRt3": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "Priv3RouteTable"]]}}
+	]
       }
     },
     "myPriv3DefRt": {
@@ -182,7 +200,10 @@
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
         "AllocationId": {"Fn::GetAtt": ["myEip1", "AllocationId"]},
-        "SubnetId": {"Ref": "myPubNet1"}
+        "SubnetId": {"Ref": "myPubNet1"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "NatGW1"]]}}
+	]
       }
     },
     "myEip2": {
@@ -196,7 +217,10 @@
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
         "AllocationId": {"Fn::GetAtt": ["myEip2", "AllocationId"]},
-        "SubnetId": {"Ref": "myPubNet2"}
+        "SubnetId": {"Ref": "myPubNet2"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "NatGW2"]]}}
+	]
       }
     },
     "myEip3": {
@@ -210,7 +234,10 @@
       "Type": "AWS::EC2::NatGateway",
       "Properties": {
         "AllocationId": {"Fn::GetAtt": ["myEip3", "AllocationId"]},
-        "SubnetId": {"Ref": "myPubNet3"}
+        "SubnetId": {"Ref": "myPubNet3"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "NatGW3"]]}}
+	]
       }
     },
     "myPrivNet1": {
@@ -219,7 +246,10 @@
         "CidrBlock": {"Ref": "myPrivateNet1"},
         "AvailabilityZone": {"Ref": "myPrivateNet1AZ"},
         "MapPublicIpOnLaunch": "False",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PrivNet1"]]}}
+	]
       }
     },
     "myPrivNet2": {
@@ -228,7 +258,10 @@
         "CidrBlock": {"Ref": "myPrivateNet2"},
         "AvailabilityZone": {"Ref": "myPrivateNet2AZ"},
         "MapPublicIpOnLaunch": "False",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PrivNet2"]]}}
+	]
       }
     },
     "myPrivNet3": {
@@ -237,7 +270,10 @@
         "CidrBlock": {"Ref": "myPrivateNet3"},
         "AvailabilityZone": {"Ref": "myPrivateNet3AZ"},
         "MapPublicIpOnLaunch": "False",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PrivNet3"]]}}
+	]
       }
     },
     "myPubNet1": {
@@ -246,7 +282,10 @@
         "CidrBlock": {"Ref": "myPublicNet1"},
         "AvailabilityZone": {"Ref": "myPublicNet1AZ"},
         "MapPublicIpOnLaunch": "True",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PubNet1"]]}}
+	]
       }
     },
     "myPubNet2": {
@@ -255,7 +294,10 @@
         "CidrBlock": {"Ref": "myPublicNet2"},
         "AvailabilityZone": {"Ref": "myPublicNet2AZ"},
         "MapPublicIpOnLaunch": "True",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PubNet2"]]}}
+	]
       }
     },
     "myPubNet3": {
@@ -264,7 +306,10 @@
         "CidrBlock": {"Ref": "myPublicNet3"},
         "AvailabilityZone": {"Ref": "myPublicNet3AZ"},
         "MapPublicIpOnLaunch": "True",
-        "VpcId": {"Ref": "myVPC"}
+        "VpcId": {"Ref": "myVPC"},
+	"Tags": [
+		{"Key": "Name", "Value": {"Fn::Join": ["-", [{"Ref": "AWS::StackName"}, "PubNet3"]]}}
+	]
       }
     }
   }

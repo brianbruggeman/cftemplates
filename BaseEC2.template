@@ -1,32 +1,50 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
   "Description" : "Base EC2 Template v0.1",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {"default": "Network Configuration"},
+          "Parameters": [
+            "myInstanceVPC",
+            "myInstanceAZ",
+            "myInstanceSubnet"
+          ]
+        },
+        {
+          "Label": {"default": "Security Configuration"},
+          "Parameters": ["myInstanceKeyPair", "myInstanceSecurityGroup", "myInstanceIamProfile"]
+        },
+        {
+          "Label": {"default": "EC2 Instance Configuration"},
+          "Parameters": ["myInstanceType", "myInstanceOS", "myInstanceAMI"]
+        }
+      ]
+    }
+  },
   "Parameters": {
-    "MyInstanceAZ": {
-      "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+    "myInstanceAZ": {
+      "Type": "AWS::EC2::AvailabilityZone::Name",
       "Description": "The Desired AZ For Your EC2 Instance"
     },
-    "MyInstanceVPC": {
+    "myInstanceVPC": {
       "Type": "AWS::EC2::VPC::Id",
       "Description": "The Desired VPC For Your EC2 Instance"
     },
-    "MyInstanceSubnet": {
+    "myInstanceSubnet": {
       "Type": "AWS::EC2::Subnet::Id",
       "Description": "The Desired Subnet For Your EC2 Instance"
     },
-    "MyInstanceKeyPair": {
+    "myInstanceKeyPair": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "The Desired KeyPair For Your EC2 Instance"
     },
-    "MyInstanceSecurityGroup": {
+    "myInstanceSecurityGroup": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>",
       "Description": "The Desired SecurityGroup For Your EC2 Instance"
     },
-    "MyInstanceIamProfile": {
-      "Type": "String",
-      "Description": "The Desired IAM Profile For Your EC2 Instance"
-    },
-    "MyInstanceType": {
+    "myInstanceType": {
       "Type": "String",
       "Default": "t2.micro",
       "AllowedValues": ["t2.nano", "t2.micro", "t2.small", "t2.medium",
@@ -39,35 +57,87 @@
         "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge"],
       "Description": "The Desired Instance Type For Your EC2 Instance"
     },
-    "MyInstanceAMI": {
-      "Type": "AWS::EC2::Image::Id",
-      "Description": "The Desired AMI For Your EC2 Instance"
+    "myInstanceOS": {
+      "Description": "The Desired OS For Your EC2 Instance",
+      "Type": "String",
+      "AllowedValues": ["Debian7", "Debian8",
+        "AmazonLinux", "CentOS6", "CentOS7",
+        "Ubuntu1204", "Ubuntu1404", "Specify AMI"]
+    },
+    "myInstanceAMI": {
+      "Type": "String",
+      "Description": "If \"Specify AMI\", the Desired AMI For Your EC2 Instance)",
+      "Default": "ami-"
     }
   },
+  "Mappings": {
+    "RegionOSAMIMap":{
+      "us-east-1": {"Debian7": "ami-ba9614d2", "Debian8": "ami-8e9ca3e4", "AmazonLinux": "ami-08111162", "CentOS6": "ami-1c221e76", "CentOS7": "ami-6d1c2007", "Ubuntu1204": "ami-88dfdee2", "Ubuntu1404": "ami-7c927e11"},
+      "us-west-1": {"Debian7": "ami-13a1b556", "Debian8": "ami-c890e0a8", "AmazonLinux": "ami-1b0f7d7b", "CentOS6": "ami-ac5f2fcc", "CentOS7": "ami-af4333cf", "Ubuntu1204": "ami-4f285a2f", "Ubuntu1404": "ami-4983fa29"},
+      "us-west-2": {"Debian7": "ami-89763fb9", "Debian8": "ami-59799439", "AmazonLinux": "ami-c229c0a2", "CentOS6": "ami-05cf2265", "CentOS7": "ami-d2c924b2", "Ubuntu1204": "ami-1a977e7a", "Ubuntu1404": "ami-c0c439a0"},
+      "eu-west-1": {"Debian7": "ami-2602aa51", "Debian8": "ami-3a13ac49", "AmazonLinux": "ami-60338913", "CentOS6": "ami-edb9069e", "CentOS7": "ami-7abd0209", "Ubuntu1204": "ami-65932916", "Ubuntu1404": "ami-a6a62cd5"},
+      "eu-central-1": {"Debian7": "ami-d8a597c5", "Debian8": "ami-47d93c28", "AmazonLinux": "ami-d0d037bf", "CentOS6": "ami-2bf11444", "CentOS7": "ami-9bf712f4", "Ubuntu1204": "ami-3cf61153", "Ubuntu1404": "ami-6528c50a"},
+      "sa-east-1": {"Debian7": "ami-2170c73c", "Debian8": "ami-4e54d622", "AmazonLinux": "ami-1e159872", "CentOS6": "ami-03b93b6f", "CentOS7": "ami-26b93b4a", "Ubuntu1204": "ami-2661ec4a", "Ubuntu1404": "ami-9dcb43f1"}
+    }
+  },
+  "Conditions": {
+    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "Specify AMI"]}
+  },
   "Resources" : {
-    "MyEc2Instance": {
+    "myInstanceRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": ["ec2.amazonaws.com"]
+              },
+              "Action": ["sts:AssumeRole"]
+            }
+          ]
+        }
+      }
+    },
+    "myInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{"Ref": "myInstanceRole"}]
+      }
+    },
+    "myEc2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceName": {"Ref": "MyInstanceAMI"}
+        "AvailabilityZone": {"Ref": "myInstanceAZ"},
+        "IamInstanceProfile": {"Ref": "myInstanceProfile"},
+        "ImageId": {"Fn::If": [
+          "ManualAMI",
+          {"Ref": "myInstanceAMI"},
+          { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myInstanceOS"}]}
+          ]
+        }
       }
     }
   },
   "Outputs":{
     "InstanceCreated": {
       "Description": "The ID of the Created EC2 Instance",
-      "Value": {"Ref": "MyEc2Instance"}
+      "Value": {"Ref": "myEc2Instance"}
     },
     "InstanceDnsName": {
       "Description": "The Public DNS of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PublicDnsName"]}
+      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicDnsName"]}
     },
     "InstancePublicIp": {
       "Description": "The Public IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PublicIp"]}
+      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicIp"]}
     },
     "InstancePrivateIp": {
       "Description": "The Private IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["MyEc2Instance", "PrivateIp"]}
+      "Value": { "Fn::GetAtt": ["myEc2Instance", "PrivateIp"]}
     }
   }
 }
