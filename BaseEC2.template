@@ -118,7 +118,11 @@
           {"Ref": "myInstanceAMI"},
           { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myInstanceOS"}]}
           ]
-        }
+        },
+        "InstanceType": {"Ref": "myInstanceType"},
+        "KeyName": {"Ref": "myInstanceKeyPair"},
+        "SecurityGroupIds": [{"Ref": "myInstanceSecurityGroup"}],
+        "SubnetId": [{"Ref": "myInstanceSubnet"}]
       }
     }
   },
