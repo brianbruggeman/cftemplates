@@ -7,44 +7,44 @@
         {
           "Label": {"default": "Network Configuration"},
           "Parameters": [
-            "myInstanceVPC",
-            "myInstanceAZ",
-            "myInstanceSubnet"
+            "myAutoscaleInstVPC",
+            "myAutoscaleInstAZs",
+            "myAutoscaleInstSubnet"
           ]
         },
         {
           "Label": {"default": "Security Configuration"},
-          "Parameters": ["myInstanceKeyPair", "myInstanceSecurityGroup", "myInstanceIamProfile"]
+          "Parameters": ["myAutoscaleInstKeyPair", "myAutoscaleInstSecurityGroup", "myAutoscaleInstIamProfile"]
         },
         {
           "Label": {"default": "EC2 Instance Configuration"},
-          "Parameters": ["myInstanceType", "myInstanceOS", "myInstanceAMI"]
+          "Parameters": ["myAutoscaleInstType", "myAutoscaleInstOS", "myAutoscaleInstAMI"]
         }
       ]
     }
   },
   "Parameters": {
-    "myInstanceAZ": {
+    "myAutoscaleInstAZ": {
       "Type": "AWS::EC2::AvailabilityZone::Name",
       "Description": "The Desired AZ For Your EC2 Instance"
     },
-    "myInstanceVPC": {
+    "myAutoscaleInstVPC": {
       "Type": "AWS::EC2::VPC::Id",
       "Description": "The Desired VPC For Your EC2 Instance"
     },
-    "myInstanceSubnet": {
+    "myAutoscaleInstSubnet": {
       "Type": "AWS::EC2::Subnet::Id",
       "Description": "The Desired Subnet For Your EC2 Instance"
     },
-    "myInstanceKeyPair": {
+    "myAutoscaleInstKeyPair": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "The Desired KeyPair For Your EC2 Instance"
     },
-    "myInstanceSecurityGroup": {
+    "myAutoscaleInstSecurityGroup": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>",
       "Description": "The Desired SecurityGroup For Your EC2 Instance"
     },
-    "myInstanceType": {
+    "myAutoscaleInstType": {
       "Type": "String",
       "Default": "t2.micro",
       "AllowedValues": ["t2.nano", "t2.micro", "t2.small", "t2.medium",
@@ -57,14 +57,14 @@
         "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge"],
       "Description": "The Desired Instance Type For Your EC2 Instance"
     },
-    "myInstanceOS": {
+    "myAutoscaleInstOS": {
       "Description": "The Desired OS For Your EC2 Instance",
       "Type": "String",
       "AllowedValues": ["Debian8",
         "AmazonLinux", "CentOS6", "CentOS7",
         "Ubuntu1204", "Ubuntu1404", "AMI"]
     },
-    "myInstanceAMI": {
+    "myAutoscaleInstAMI": {
       "Type": "String",
       "Description": "If \"AMI\", the Desired AMI For Your EC2 Instance)",
       "Default": "ami-"
@@ -81,10 +81,10 @@
     }
   },
   "Conditions": {
-    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "AMI"]}
+    "ManualAMI": {"Fn::Equals": [{"Ref": "myAutoscaleInstOS"}, "AMI"]}
   },
   "Resources" : {
-    "myInstanceRole": {
+    "myAutoscaleInstRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -101,28 +101,28 @@
         }
       }
     },
-    "myInstanceProfile": {
+    "myAutoscaleInstProfile": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Path": "/",
-        "Roles": [{"Ref": "myInstanceRole"}]
+        "Roles": [{"Ref": "myAutoscaleInstRole"}]
       }
     },
     "myEc2Instance": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "AvailabilityZone": {"Ref": "myInstanceAZ"},
-        "IamInstanceProfile": {"Ref": "myInstanceProfile"},
+        "AvailabilityZone": {"Ref": "myAutoscaleInstAZ"},
+        "IamInstanceProfile": {"Ref": "myAutoscaleInstProfile"},
         "ImageId": {"Fn::If": [
           "ManualAMI",
-          {"Ref": "myInstanceAMI"},
-          { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myInstanceOS"}]}
+          {"Ref": "myAutoscaleInstAMI"},
+          { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myAutoscaleInstOS"}]}
           ]
         },
-        "InstanceType": {"Ref": "myInstanceType"},
-        "KeyName": {"Ref": "myInstanceKeyPair"},
-        "SecurityGroupIds": {"Ref": "myInstanceSecurityGroup"},
-        "SubnetId": {"Ref": "myInstanceSubnet"}
+        "InstanceType": {"Ref": "myAutoscaleInstType"},
+        "KeyName": {"Ref": "myAutoscaleInstKeyPair"},
+        "SecurityGroupIds": {"Ref": "myAutoscaleInstSecurityGroup"},
+        "SubnetId": {"Ref": "myAutoscaleInstSubnet"}
       }
     }
   },
