@@ -62,26 +62,26 @@
       "Type": "String",
       "AllowedValues": ["Debian7", "Debian8",
         "AmazonLinux", "CentOS6", "CentOS7",
-        "Ubuntu1204", "Ubuntu1404", "Specify AMI"]
+        "Ubuntu1204", "Ubuntu1404", "AMI"]
     },
     "myInstanceAMI": {
       "Type": "String",
-      "Description": "If \"Specify AMI\", the Desired AMI For Your EC2 Instance)",
+      "Description": "If \"AMI\", the Desired AMI For Your EC2 Instance)",
       "Default": "ami-"
     }
   },
   "Mappings": {
     "RegionOSAMIMap":{
-      "us-east-1": {"Debian7": "ami-ba9614d2", "Debian8": "ami-8e9ca3e4", "AmazonLinux": "ami-08111162", "CentOS6": "ami-1c221e76", "CentOS7": "ami-6d1c2007", "Ubuntu1204": "ami-88dfdee2", "Ubuntu1404": "ami-7c927e11"},
-      "us-west-1": {"Debian7": "ami-13a1b556", "Debian8": "ami-c890e0a8", "AmazonLinux": "ami-1b0f7d7b", "CentOS6": "ami-ac5f2fcc", "CentOS7": "ami-af4333cf", "Ubuntu1204": "ami-4f285a2f", "Ubuntu1404": "ami-4983fa29"},
-      "us-west-2": {"Debian7": "ami-89763fb9", "Debian8": "ami-59799439", "AmazonLinux": "ami-c229c0a2", "CentOS6": "ami-05cf2265", "CentOS7": "ami-d2c924b2", "Ubuntu1204": "ami-1a977e7a", "Ubuntu1404": "ami-c0c439a0"},
-      "eu-west-1": {"Debian7": "ami-2602aa51", "Debian8": "ami-3a13ac49", "AmazonLinux": "ami-60338913", "CentOS6": "ami-edb9069e", "CentOS7": "ami-7abd0209", "Ubuntu1204": "ami-65932916", "Ubuntu1404": "ami-a6a62cd5"},
-      "eu-central-1": {"Debian7": "ami-d8a597c5", "Debian8": "ami-47d93c28", "AmazonLinux": "ami-d0d037bf", "CentOS6": "ami-2bf11444", "CentOS7": "ami-9bf712f4", "Ubuntu1204": "ami-3cf61153", "Ubuntu1404": "ami-6528c50a"},
-      "sa-east-1": {"Debian7": "ami-2170c73c", "Debian8": "ami-4e54d622", "AmazonLinux": "ami-1e159872", "CentOS6": "ami-03b93b6f", "CentOS7": "ami-26b93b4a", "Ubuntu1204": "ami-2661ec4a", "Ubuntu1404": "ami-9dcb43f1"}
+      "us-east-1": {"Debian7": "ami-ba9614d2", "Debian8": "ami-8e9ca3e4", "AmazonLinux": "ami-08111162", "CentOS6": "ami-1c221e76", "CentOS7": "ami-6d1c2007", "Ubuntu1204": "ami-88dfdee2", "Ubuntu1404": "ami-7c927e11", "AMI": ""},
+      "us-west-1": {"Debian7": "ami-13a1b556", "Debian8": "ami-c890e0a8", "AmazonLinux": "ami-1b0f7d7b", "CentOS6": "ami-ac5f2fcc", "CentOS7": "ami-af4333cf", "Ubuntu1204": "ami-4f285a2f", "Ubuntu1404": "ami-4983fa29", "AMI": ""},
+      "us-west-2": {"Debian7": "ami-89763fb9", "Debian8": "ami-59799439", "AmazonLinux": "ami-c229c0a2", "CentOS6": "ami-05cf2265", "CentOS7": "ami-d2c924b2", "Ubuntu1204": "ami-1a977e7a", "Ubuntu1404": "ami-c0c439a0", "AMI": ""},
+      "eu-west-1": {"Debian7": "ami-2602aa51", "Debian8": "ami-3a13ac49", "AmazonLinux": "ami-60338913", "CentOS6": "ami-edb9069e", "CentOS7": "ami-7abd0209", "Ubuntu1204": "ami-65932916", "Ubuntu1404": "ami-a6a62cd5", "AMI": ""},
+      "eu-central-1": {"Debian7": "ami-d8a597c5", "Debian8": "ami-47d93c28", "AmazonLinux": "ami-d0d037bf", "CentOS6": "ami-2bf11444", "CentOS7": "ami-9bf712f4", "Ubuntu1204": "ami-3cf61153", "Ubuntu1404": "ami-6528c50a", "AMI": ""},
+      "sa-east-1": {"Debian7": "ami-2170c73c", "Debian8": "ami-4e54d622", "AmazonLinux": "ami-1e159872", "CentOS6": "ami-03b93b6f", "CentOS7": "ami-26b93b4a", "Ubuntu1204": "ami-2661ec4a", "Ubuntu1404": "ami-9dcb43f1", "AMI": ""}
     }
   },
   "Conditions": {
-    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "Specify AMI"]}
+    "ManualAMI": {"Fn::Equals": [{"Ref": "myInstanceOS"}, "AMI"]}
   },
   "Resources" : {
     "myInstanceRole": {
@@ -121,8 +121,8 @@
         },
         "InstanceType": {"Ref": "myInstanceType"},
         "KeyName": {"Ref": "myInstanceKeyPair"},
-        "SecurityGroupIds": [{"Ref": "myInstanceSecurityGroup"}],
-        "SubnetId": [{"Ref": "myInstanceSubnet"}]
+        "SecurityGroupIds": {"Ref": "myInstanceSecurityGroup"},
+        "SubnetId": {"Ref": "myInstanceSubnet"}
       }
     }
   },
