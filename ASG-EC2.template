@@ -1,48 +1,67 @@
 {
   "AWSTemplateFormatVersion" : "2010-09-09",
-  "Description" : "Base EC2 Template v0.1",
+  "Description" : "Base AutoScalingGroup Template v0.1",
   "Metadata": {
     "AWS::CloudFormation::Interface": {
       "ParameterGroups": [
         {
-          "Label": {"default": "Network Configuration"},
+          "Label": {"default": "AutoScale Configuration"},
           "Parameters": [
-            "myAutoscaleInstanceVPC",
-            "myAutoscaleInstanceAZs",
-            "myAutoscaleInstanceSubnet"
+            "myAutoscaleVPC",
+            "myAutoscaleAZs",
+            "myAutoscaleSubnets"
           ]
         },
         {
           "Label": {"default": "Security Configuration"},
-          "Parameters": ["myAutoscaleInstanceKeyPair", "myAutoscaleInstanceSecurityGroup", "myAutoscaleInstanceIamProfile"]
+          "Parameters": ["myAutoscaleInstanceKeyPair", "myAutoscaleInstanceSecurityGroup"]
         },
         {
-          "Label": {"default": "EC2 Instance Configuration"},
+          "Label": {"default": "AutoScale EC2 Instance Configuration"},
           "Parameters": ["myAutoscaleInstanceType", "myAutoscaleInstanceOS", "myAutoscaleInstanceAMI"]
+        },
+        {
+          "Label": {"default": "AutoScale Group Size"},
+          "Parameters": ["myAsgMinSize", "myAsgDesiredCapacity", "myAsgMaxSize"]
         }
       ]
     }
   },
   "Parameters": {
-    "myAutoscaleInstanceAZ": {
-      "Type": "AWS::EC2::AvailabilityZone::Name",
-      "Description": "The Desired AZ For Your EC2 Instance"
+    "myAutoscaleAZs": {
+      "Type": "List<AWS::EC2::AvailabilityZone::Name>",
+      "Description": "The Desired AZs For Your EC2 Instances"
     },
-    "myAutoscaleInstanceVPC": {
+    "myAutoscaleVPC": {
       "Type": "AWS::EC2::VPC::Id",
       "Description": "The Desired VPC For Your EC2 Instance"
     },
-    "myAutoscaleInstanceSubnet": {
-      "Type": "AWS::EC2::Subnet::Id",
-      "Description": "The Desired Subnet For Your EC2 Instance"
+    "myAutoscaleSubnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "The Desired Subnets For Your EC2 Instances"
     },
     "myAutoscaleInstanceKeyPair": {
       "Type": "AWS::EC2::KeyPair::KeyName",
-      "Description": "The Desired KeyPair For Your EC2 Instance"
+      "Description": "The Desired KeyPair For Your EC2 Instances"
     },
     "myAutoscaleInstanceSecurityGroup": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>",
-      "Description": "The Desired SecurityGroup For Your EC2 Instance"
+      "Description": "The Desired SecurityGroup For Your EC2 Instances"
+    },
+    "myAsgMinSize": {
+      "Description": "The Minimum number of EC2 Instances for your AutoScale Group",
+      "Type": "String",
+      "AllowedPattern": "\\d+"
+    },
+    "myAsgDesiredCapacity": {
+      "Description": "The Minimum number of EC2 Instances for your AutoScale Group",
+      "Type": "String",
+      "AllowedPattern": "\\d+"
+    },
+    "myAsgMaxSize": {
+      "Description": "The Minimum number of EC2 Instances for your AutoScale Group",
+      "Type": "String",
+      "AllowedPattern": "\\d+"
     },
     "myAutoscaleInstanceType": {
       "Type": "String",
@@ -55,10 +74,10 @@
         "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge",
         "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge",
         "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge"],
-      "Description": "The Desired Instance Type For Your EC2 Instance"
+      "Description": "The Desired Instance Type For Your EC2 Instances"
     },
     "myAutoscaleInstanceOS": {
-      "Description": "The Desired OS For Your EC2 Instance",
+      "Description": "The Desired OS For Your EC2 Instances",
       "Type": "String",
       "AllowedValues": ["Debian8",
         "AmazonLinux", "CentOS6", "CentOS7",
@@ -66,7 +85,7 @@
     },
     "myAutoscaleInstanceAMI": {
       "Type": "String",
-      "Description": "If \"AMI\", the Desired AMI For Your EC2 Instance)",
+      "Description": "If \"AMI\", the Desired AMI For Your EC2 Instances)",
       "Default": "ami-"
     }
   },
@@ -118,45 +137,21 @@
           { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myAutoscaleInstanceOS"}]}
           ]
         },
-        "InstanceType": {"Ref": "myAutoscaleInstanceType"},"InstanceType": {"Ref": "myAutoscaleInstanceType"},
-        "KeyName": {"Ref": "myAutoscaleInstanceKeyPair"},
-        "SecurityGroups": {"Ref": "myAutoscaleInstanceSecurityGroup"},
-      }
-    },
-    "myEc2Instance": {
-      "Type": "AWS::EC2::Instance",
-      "Properties": {
-        "AvailabilityZone": {"Ref": "myAutoscaleInstanceAZ"},
-        "IamInstanceProfile": {"Ref": "myAutoscaleInstanceProfile"},
-        "ImageId": {"Fn::If": [
-          "ManualAMI",
-          {"Ref": "myAutoscaleInstanceAMI"},
-          { "Fn::FindInMap" : [ "RegionOSAMIMap", { "Ref" : "AWS::Region" }, {"Ref": "myAutoscaleInstanceOS"}]}
-          ]
-        },
         "InstanceType": {"Ref": "myAutoscaleInstanceType"},
         "KeyName": {"Ref": "myAutoscaleInstanceKeyPair"},
-        "SecurityGroupIds": {"Ref": "myAutoscaleInstanceSecurityGroup"},
-        "SubnetId": {"Ref": "myAutoscaleInstanceSubnet"}
+        "SecurityGroups": {"Ref": "myAutoscaleInstanceSecurityGroup"}
       }
-    }
-  },
-  "Outputs":{
-    "InstanceCreated": {
-      "Description": "The ID of the Created EC2 Instance",
-      "Value": {"Ref": "myEc2Instance"}
     },
-    "InstanceDnsName": {
-      "Description": "The Public DNS of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicDnsName"]}
-    },
-    "InstancePublicIp": {
-      "Description": "The Public IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PublicIp"]}
-    },
-    "InstancePrivateIp": {
-      "Description": "The Private IP Address of the Created EC2 Instance",
-      "Value": { "Fn::GetAtt": ["myEc2Instance", "PrivateIp"]}
+    "myAutoscaleGroup":{
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "AvailabilityZones": {"Ref": "myAutoscaleAZs"},
+        "LaunchConfigurationName" : { "Ref" : "myLaunchConfig" },
+        "MinSize" : { "Ref" : "myAsgMinSize" },
+        "DesiredCapacity" : { "Ref" : "myAsgDesiredCapacity" },
+        "MaxSize" : { "Ref" : "myAsgMaxSize" },
+        "VPCZoneIdentifier": { "Ref" : "myAutoscaleSubnets" }
+      }
     }
   }
 }
