@@ -23,6 +23,10 @@
         {
           "Label": {"default": "AutoScale Group Size"},
           "Parameters": ["myAsgMinSize", "myAsgDesiredCapacity", "myAsgMaxSize"]
+        },
+        {
+          "Label": {"default": "AutoScale Group Health"},
+          "Parameters": ["myAsgCooldown", "myAsgHealthCheckGracePeriod", "myAsgHealthCheckType"]
         }
       ]
     }
@@ -54,14 +58,34 @@
       "AllowedPattern": "\\d+"
     },
     "myAsgDesiredCapacity": {
-      "Description": "The Minimum number of EC2 Instances for your AutoScale Group",
+      "Description": "The Desired number of EC2 Instances for your AutoScale Group",
       "Type": "String",
       "AllowedPattern": "\\d+"
     },
     "myAsgMaxSize": {
-      "Description": "The Minimum number of EC2 Instances for your AutoScale Group",
+      "Description": "The Maximum number of EC2 Instances for your AutoScale Group",
       "Type": "String",
       "AllowedPattern": "\\d+"
+    },
+    "myAsgCooldown": {
+      "Description": "The Time in Seconds to Pause Scaling Further after an AutoScale Event",
+      "Type": "String",
+      "AllowedPattern": "\\d+"
+    },
+    "myAsgHealthCheckGracePeriod": {
+      "Description": "The Time in Seconds to Pause the Heath Check after an Instance is in Service",
+      "Type": "String",
+      "AllowedPattern": "\\d+"
+    },
+    "myAsgHealthCheckType": {
+      "Description": "Whether the Health Check is from the ELB or the EC2 Instance",
+      "Type": "String",
+      "AllowedValues": ["EC2", "ELB"]
+    },
+    "myAutoscaleLbOption": {
+      "Description": "The Desired OS For Your EC2 Instances",
+      "Type": "String",
+      "AllowedValues": ["None", "New"]
     },
     "myAutoscaleInstanceType": {
       "Type": "String",
@@ -79,8 +103,7 @@
     "myAutoscaleInstanceOS": {
       "Description": "The Desired OS For Your EC2 Instances",
       "Type": "String",
-      "AllowedValues": ["Debian8",
-        "AmazonLinux", "CentOS6", "CentOS7",
+      "AllowedValues": ["Debian8", "AmazonLinux", "CentOS6", "CentOS7",
         "Ubuntu1204", "Ubuntu1404", "AMI"]
     },
     "myAutoscaleInstanceAMI": {
@@ -100,7 +123,8 @@
     }
   },
   "Conditions": {
-    "ManualAMI": {"Fn::Equals": [{"Ref": "myAutoscaleInstanceOS"}, "AMI"]}
+    "ManualAMI": {"Fn::Equals": [{"Ref": "myAutoscaleInstanceOS"}, "AMI"]},
+    "ASGNewLB": {"Fn::Equals": [{"Ref": "myAutoscaleLbOption"}, "New"]}
   },
   "Resources" : {
     "myAutoscaleInstanceRole": {
@@ -147,6 +171,9 @@
       "Properties": {
         "AvailabilityZones": {"Ref": "myAutoscaleAZs"},
         "LaunchConfigurationName" : { "Ref" : "myLaunchConfig" },
+        "Cooldown" : { "Ref" : "myAsgCooldown" },
+        "HealthCheckType" : { "Ref" : "myAsgHealthCheckType" },
+        "HealthCheckGracePeriod" : { "Ref" : "myAsgHealthCheckGracePeriod" },
         "MinSize" : { "Ref" : "myAsgMinSize" },
         "DesiredCapacity" : { "Ref" : "myAsgDesiredCapacity" },
         "MaxSize" : { "Ref" : "myAsgMaxSize" },
