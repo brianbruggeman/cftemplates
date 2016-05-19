@@ -83,7 +83,7 @@
       "AllowedValues": ["EC2", "ELB"]
     },
     "myAutoscaleLbOption": {
-      "Description": "The Desired OS For Your EC2 Instances",
+      "Description": "If you need an ELB or not for this AutoScale Group",
       "Type": "String",
       "AllowedValues": ["None", "New"]
     },
@@ -151,6 +151,14 @@
         "Roles": [{"Ref": "myAutoscaleInstanceRole"}]
       }
     },
+    "myAutoscaleELB": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Condition": "ASGNewLB",
+      "Properties": {
+        "AvailabilityZones": {"Ref": "myAutoscaleAZs"},
+        "CrossZone": "True"
+      }
+    },
     "myLaunchConfig": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
@@ -174,6 +182,7 @@
         "Cooldown" : { "Ref" : "myAsgCooldown" },
         "HealthCheckType" : { "Ref" : "myAsgHealthCheckType" },
         "HealthCheckGracePeriod" : { "Ref" : "myAsgHealthCheckGracePeriod" },
+        "LoadBalancerNames": [{"Fn::If": ["ASGNewLB", {"Ref": "myAutoscaleELB"}, {"Ref": "AWS::NoValue"}]}],
         "MinSize" : { "Ref" : "myAsgMinSize" },
         "DesiredCapacity" : { "Ref" : "myAsgDesiredCapacity" },
         "MaxSize" : { "Ref" : "myAsgMaxSize" },
