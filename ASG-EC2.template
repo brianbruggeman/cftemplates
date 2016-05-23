@@ -234,6 +234,23 @@
     },
     "myLaunchConfig": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata":{
+        "Comment": "Install Webserver",
+        "AWS::CloudFormation::Init" : {
+          "config": {
+            "packages": {
+              "yum":{
+                "nginx": []
+              }
+            },
+            "services": {
+              "sysvinit": {
+                "nginx": {"enabled": "true", "ensureRunning": "true"}
+              }
+            }
+          }
+        }
+      },
       "Properties": {
         "IamInstanceProfile" : {"Ref": "myAutoscaleInstanceProfile"},
         "ImageId" : {"Fn::If": [
@@ -244,7 +261,25 @@
         },
         "InstanceType": {"Ref": "myAutoscaleInstanceType"},
         "KeyName": {"Ref": "myAutoscaleInstanceKeyPair"},
-        "SecurityGroups": [{"Ref": "myAsgElbSG"}]
+        "SecurityGroups": [{"Ref": "myAsgElbSG"}],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": ["", [
+              "#!/bin/bash -xe\n",
+              "yum update -y aws-cfn-bootstrap\n",
+
+              "/opt/aws/bin/cfn-init -v ",
+              "         --stack ", { "Ref" : "AWS::StackName" },
+              "         --resource myLaunchConfig ",
+              "         --region ", { "Ref" : "AWS::Region" }, "\n",
+
+              "/opt/aws/bin/cfn-signal -e $? ",
+              "         --stack ", { "Ref" : "AWS::StackName" },
+              "         --resource myAutoscaleGroup ",
+              "         --region ", { "Ref" : "AWS::Region" }, "\n"
+            ]]
+          }
+        }
       }
     },
     "myAutoscaleGroup":{
@@ -260,6 +295,20 @@
         "DesiredCapacity" : { "Ref" : "myAsgDesiredCapacity" },
         "MaxSize" : { "Ref" : "myAsgMaxSize" },
         "VPCZoneIdentifier": { "Ref" : "myAutoscaleSubnets" }
+      },
+      "UpdatePolicy": {
+        "AutoScalingRollingUpdate": {
+          "MinInstancesInService": "1",
+          "MaxBatchSize": "1",
+          "PauseTime": "PT5M",
+          "WaitOnResourceSignals": "true"
+        }
+      },
+      "CreationPolicy": {
+        "ResouceSignal": {
+          "Timeout": "PT5M",
+          "Count": "1"
+        }
       }
     }
   }
