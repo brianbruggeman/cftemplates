@@ -44,6 +44,10 @@
       "Type": "List<AWS::EC2::Subnet::Id>",
       "Description": "The Desired Subnets For Your EC2 Instances"
     },
+    "myAutoscaleElbSubnets": {
+      "Type": "List<AWS::EC2::Subnet::Id>",
+      "Description": "The Desired Subnets For Your ELB (REQUIRED Even if not using ELB)"
+    },
     "myAutoscaleInstanceKeyPair": {
       "Type": "AWS::EC2::KeyPair::KeyName",
       "Description": "The Desired KeyPair For Your EC2 Instances"
@@ -87,6 +91,11 @@
       "Type": "String",
       "AllowedValues": ["None", "New"]
     },
+    "myAutoscaleLbOption": {
+      "Description": "If you need an ELB or not for this AutoScale Group",
+      "Type": "String",
+      "AllowedValues": ["None", "New"]
+    },
     "myAutoscaleInstanceType": {
       "Type": "String",
       "Default": "t2.micro",
@@ -105,6 +114,30 @@
       "Type": "String",
       "AllowedValues": ["Debian8", "AmazonLinux", "CentOS6", "CentOS7",
         "Ubuntu1204", "Ubuntu1404", "AMI"]
+    },
+    "myAsgElbProtocol": {
+      "Description": "The Desired Protocol for your ELB",
+      "Type": "String",
+      "AllowedValues": ["HTTP", "HTTPS", "TCP", "SSL"],
+      "Default": "HTTP"
+    },
+    "myAsgElbPort": {
+      "Description": "The Desired Port for External Connections to your ELB",
+      "Type": "String",
+      "AllowedPattern": "\\d+",
+      "Default": "80"
+    },
+    "myAsgInstanceProtocol": {
+      "Description": "The Desired Protocol for your ELB",
+      "Type": "String",
+      "AllowedValues": ["HTTP", "HTTPS", "TCP", "SSL"],
+      "Default": "HTTP"
+    },
+    "myAsgInstancePort": {
+      "Description": "The Desired Port for External Connections to your ELB",
+      "Type": "String",
+      "AllowedPattern": "\\d+",
+      "Default": "80"
     },
     "myAutoscaleInstanceAMI": {
       "Type": "String",
@@ -151,12 +184,52 @@
         "Roles": [{"Ref": "myAutoscaleInstanceRole"}]
       }
     },
+    "myAutoscaleELBSG": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Condition": "ASGNewLB",
+      "Properties": {
+        "GroupDescription": "ELB Security Group",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": {"Ref": "myAsgInstancePort"},
+            "ToPort": {"Ref": "myAsgInstancePort"},
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "VpcId": {"Ref": "myAutoscaleVPC"}
+      }
+    },
     "myAutoscaleELB": {
       "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
       "Condition": "ASGNewLB",
       "Properties": {
-        "AvailabilityZones": {"Ref": "myAutoscaleAZs"},
-        "CrossZone": "True"
+        "Subnets": {"Ref": "myAutoscaleElbSubnets"},
+        "CrossZone": "True",
+        "Listeners": [
+          {
+            "InstancePort": {"Ref": "myAsgInstancePort"},
+            "InstanceProtocol": {"Ref": "myAsgInstanceProtocol"},
+            "LoadBalancerPort": {"Ref": "myAsgElbPort"},
+            "Protocol": {"Ref": "myAsgElbProtocol"}
+          }
+        ],
+        "SecurityGroups": [{"Ref": "myAsgElbSG"}, {"Ref": "myAutoscaleELBSG"}]
+      }
+    },
+    "myAsgElbSG":{
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "ELB to EC2 host",
+        "VpcId" : {"Ref" : "myAutoscaleVPC"}
+      }
+    },
+    "myAsgElbSGIngress":{
+      "Type" : "AWS::EC2::SecurityGroupIngress",
+      "Properties" : {
+        "GroupId": {"Ref": "myAsgElbSG"},
+        "SourceSecurityGroupId": {"Ref": "myAsgElbSG"},
+        "IpProtocol" : "-1"
       }
     },
     "myLaunchConfig": {
@@ -171,7 +244,7 @@
         },
         "InstanceType": {"Ref": "myAutoscaleInstanceType"},
         "KeyName": {"Ref": "myAutoscaleInstanceKeyPair"},
-        "SecurityGroups": {"Ref": "myAutoscaleInstanceSecurityGroup"}
+        "SecurityGroups": [{"Ref": "myAsgElbSG"}]
       }
     },
     "myAutoscaleGroup":{
