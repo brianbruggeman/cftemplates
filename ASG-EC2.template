@@ -91,11 +91,6 @@
       "Type": "String",
       "AllowedValues": ["None", "New"]
     },
-    "myAutoscaleLbOption": {
-      "Description": "If you need an ELB or not for this AutoScale Group",
-      "Type": "String",
-      "AllowedValues": ["None", "New"]
-    },
     "myAutoscaleInstanceType": {
       "Type": "String",
       "Default": "t2.micro",
@@ -305,7 +300,7 @@
         }
       },
       "CreationPolicy": {
-        "ResouceSignal": {
+        "ResourceSignal": {
           "Timeout": "PT5M",
           "Count": "1"
         }

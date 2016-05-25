@@ -14,7 +14,7 @@
         },
         {
           "Label": {"default": "Security Configuration"},
-          "Parameters": ["myInstanceKeyPair", "myInstanceSecurityGroup", "myInstanceIamProfile"]
+          "Parameters": ["myInstanceKeyPair", "myInstanceSecurityGroup"]
         },
         {
           "Label": {"default": "EC2 Instance Configuration"},
